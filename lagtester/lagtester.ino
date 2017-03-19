@@ -81,7 +81,7 @@ int measureLag() {
   }
 
   if (monitorState > monitorMin && monitorState < monitorMax && buttonState == HIGH) {
-    monitorTime == currentMillisSensor; // set time of monitor flash
+    monitorTime = currentMillisSensor; // set time of monitor flash
   } else {
     monitorTime = 0; //reset if reading missed / needed?
   }
