@@ -8,7 +8,7 @@ const int ledPin = 3;
 unsigned long currentMillisLed = 0;
 unsigned long startLedTime = 0;
 long OnTime = 250;           // milliseconds of on-time
-long OffTime = 750;          // milliseconds of off-time
+long OffTime = 1000;          // milliseconds of off-time
 
 // timings for sensors
 unsigned long currentMillisSensor = 0;
@@ -55,19 +55,19 @@ void loop() {
   }
 }
 
-// checks button state and operates LED
+// checks button state and operates LED / High pin should be set to 5v (100% uptime?), use cap if flickers - check if it slows down the LED. Use longer offTime if needed.
 int keepFlashing() {
   currentMillisLed = millis();
   if (buttonState == HIGH && currentMillisLed - startLedTime >= OnTime) {
     startLedTime = currentMillisLed;
-    digitalWrite(ledPin, LOW);
+    digitalWrite(ledPin, LOW); // if ON time exceeded, disable led
   }
   else if (buttonState == HIGH && currentMillisLed - startLedTime >= OffTime) {
     startLedTime = currentMillisLed;
-    digitalWrite(ledPin, HIGH);
+    digitalWrite(ledPin, HIGH); // if OFF time exceeded, enable led
   }
   else if ((buttonState == LOW) && (ledPin == HIGH)){
-    digitalWrite(ledPin, LOW); // if led is lit and button not pressed, drive it low
+    digitalWrite(ledPin, LOW); // if led is lit and button not pressed, disable led
   }
 }
 
@@ -77,16 +77,16 @@ int measureLag() {
   if (cameraState > cameraMin && cameraState < cameraMax && buttonState == HIGH) {
     cameraTime = currentMillisSensor; // set time of camera flash
   } else {
-    cameraTime = 0; //  reset if reading missed
+    cameraTime = 0; // reset if reading missed / needed?
   }
 
   if (monitorState > monitorMin && monitorState < monitorMax && buttonState == HIGH) {
     monitorTime == currentMillisSensor; // set time of monitor flash
   } else {
-    monitorTime = 0; //reset if reading missed
+    monitorTime = 0; //reset if reading missed / needed?
   }
   
-  timeDifference = cameraTime - monitorTime;
+  timeDifference = monitorTime - cameraTime;
   if (timeDifference = 0 && timeDifference < 500) { // I don't expect more lag, rejecting duration above 500ms. Also prevents output when dimming (below 0).
     Serial.print(timeDifference);
   } else if (debugMode && timeDifference < 0){ // Debug mode: output string when dimming
