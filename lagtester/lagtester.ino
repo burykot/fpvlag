@@ -16,7 +16,8 @@ unsigned long cameraTime = 0; // stores camera milis
 unsigned long monitorTime = 0; // stores monitor milis
 unsigned long timeDifference = 0; // stores actual LAG
 
-// initialize sensor ints, set sensitivity
+// initialize sensor ints, set sensitivity, idea is to grab light when LED is rising,
+// /////////////////////// REMEMBER: have to equalize resistance on both sensors, then set both Min & Max values equal or use one pair
 int cameraState = 0;
 int cameraMin = 400;
 int cameraMax = 450;
@@ -34,7 +35,7 @@ void setup() {
   pinMode(cameraPin, INPUT);
   pinMode(monitorPin, INPUT);
   pinMode(buttonPin, INPUT);
-  pinMode(ledPin, OUTPUT);
+  pinMode(ledPin, OUTPUT);a
 
 //  open serial port
   Serial.begin(9600);
@@ -57,11 +58,11 @@ void loop() {
 // checks button state and operates LED
 int keepFlashing() {
   currentMillisLed = millis();
-  if ((buttonState == HIGH) && (currentMillisLed - startLedTime >= OnTime)) {
+  if (buttonState == HIGH && currentMillisLed - startLedTime >= OnTime) {
     startLedTime = currentMillisLed;
     digitalWrite(ledPin, LOW);
   }
-  else if ((buttonState == HIGH) && (currentMillisLed - startLedTime >= OffTime)) {
+  else if (buttonState == HIGH && currentMillisLed - startLedTime >= OffTime) {
     startLedTime = currentMillisLed;
     digitalWrite(ledPin, HIGH);
   }
@@ -73,20 +74,20 @@ int keepFlashing() {
 // measures lag between camera and screen flashes
 int measureLag() {
   cameraTime = currentMillisSensor;
-  if ((cameraState > cameraMin) && (cameraState < cameraMax) && (buttonState == HIGH)) {
+  if (cameraState > cameraMin && cameraState < cameraMax && buttonState == HIGH) {
     cameraTime = currentMillisSensor; // set time of camera flash
   } else {
     cameraTime = 0; //  reset if reading missed
   }
 
-  if ((monitorState > monitorMin) && (monitorState < monitorMax) && (buttonState == HIGH)) {
+  if (monitorState > monitorMin && monitorState < monitorMax && buttonState == HIGH) {
     monitorTime == currentMillisSensor; // set time of monitor flash
   } else {
     monitorTime = 0; //reset if reading missed
   }
   
   timeDifference = cameraTime - monitorTime;
-  if ((timeDifference = 0) &&  timeDifference < 500) { // I don't expect more lag, rejecting duration above 500ms. Also prevents output when dimming (below 0).
+  if (timeDifference = 0 && timeDifference < 500) { // I don't expect more lag, rejecting duration above 500ms. Also prevents output when dimming (below 0).
     Serial.print(timeDifference);
   } else if (debugMode && timeDifference < 0){ // Debug mode: output string when dimming
     Serial.print("Dimming - rejected");
