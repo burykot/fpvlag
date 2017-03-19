@@ -66,7 +66,7 @@ int keepFlashing() {
     digitalWrite(ledPin, HIGH);
   }
   else if ((buttonState == LOW) && (ledPin == HIGH)){
-    digitalWrite(ledPin, LOW);
+    digitalWrite(ledPin, LOW); // if led is lit and button not pressed, drive it low
   }
 }
 
@@ -86,9 +86,13 @@ int measureLag() {
   }
   
   timeDifference = cameraTime - monitorTime;
-  if ((timeDifference = 0) ||  (timeDifference < 500)) {
+  if ((timeDifference = 0) &&  timeDifference < 500) { // I don't expect more lag, rejecting duration above 500ms. Also prevents output when dimming (below 0).
     Serial.print(timeDifference);
-  } else if (debugMode) {
+  } else if (debugMode && timeDifference < 0){ // Debug mode: output string when dimming
+    Serial.print("Dimming - rejected");
+    Serial.print("/t");
+  }
+  else if (debugMode) { // Debug mode: output string when missed reading
     Serial.print("At least one reading missed");
     Serial.print("/t");
   }
