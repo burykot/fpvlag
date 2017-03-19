@@ -35,7 +35,7 @@ void setup() {
   pinMode(cameraPin, INPUT);
   pinMode(monitorPin, INPUT);
   pinMode(buttonPin, INPUT);
-  pinMode(ledPin, OUTPUT);a
+  pinMode(ledPin, OUTPUT);
 
 //  open serial port
   Serial.begin(9600);
