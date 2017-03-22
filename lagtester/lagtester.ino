@@ -1,14 +1,13 @@
 // define pins
 const int cameraPin = 0;
 const int monitorPin = 1;
-const int buttonPin = A2;
-const int ledPin = 3;
+const int buttonPin = 2;
+const int ledPin = A3;
 
 // timing for LED intervals
 unsigned long currentMillisLed = 0;
-unsigned long startLedTime = 0;
-long OnTime = 250;           // milliseconds of on-time
-long OffTime = 1000;          // milliseconds of off-time
+unsigned long previousMillisLed = 0;
+long interval = 500;           // duration of interval
 
 // timings for sensors
 unsigned long currentMillisCamera = 0;
@@ -27,9 +26,8 @@ int monitorMin = 600;
 int monitorMax = 800;
 int buttonState; // default button value
 
-int debugMode = false; // set debug mode, used to output RAW values to serial
-int debugModeLength = 6; // lazy
-int debugModeArray[6] = {cameraState,monitorState,buttonState,cameraTime,monitorTime,timeDifference}; // define printed values in debug mode
+// other:
+int ledState = 0;
 
 void setup() {
 // set pins modes
@@ -49,42 +47,34 @@ void loop()
   cameraState = analogRead(cameraPin);
   monitorState = analogRead(monitorPin);
   
-  /*
-  Serial.print("Camera state ");
-  Serial.print(cameraState);
-  Serial.print("\t");
-  Serial.print("Monitor state" monitorState);
-  Serial.print("\n");
-  delay(300);
-  */
-  
   //  run core functions
-  keepFlashing();
-  measureLag(); 
-  if (debugMode)
-  {
-    printDebugInfo();
+  switch (buttonState){
+    case 1:
+      flash();
+    default:
+      digitalWrite(ledPin, 0); // bail out - disable led
   }
+  
+  measureLag(); 
+ 
 }
 
 // checks button state and operates LED / High pin should be set to 5v (100% uptime?), use cap if flickers - check if it slows down the LED. Use longer offTime if needed.
-void keepFlashing()
-{
-  currentMillisLed = millis();
-  if (buttonState == HIGH && currentMillisLed - startLedTime >= OnTime)
+void flash()
   {
-    startLedTime = currentMillisLed;
-    digitalWrite(ledPin, LOW); // if ON time exceeded, disable led
-  }
-  else if (buttonState == HIGH && currentMillisLed - startLedTime >= OffTime)
-  {
-    startLedTime = currentMillisLed;
-    digitalWrite(ledPin, HIGH); // if OFF time exceeded, enable led
-  }
-  else if (buttonState == LOW && ledPin == HIGH)
-  {
-    digitalWrite(ledPin, LOW); // if led is lit and button not pressed, disable led
-  }
+    currentMillisLed = millis();
+    if(currentMillisLed - previousMillisLed > interval)
+    {
+      ledState = digitalRead(ledPin);
+      switch(ledState) {
+        case 1:
+          digitalWrite(ledPin, 0);
+          previousMillisLed = millis();
+        default:
+          digitalWrite(ledPin, 1);
+          previousMillisLed = millis();
+      }
+    }
 }
 
 // measures lag between camera and screen flashes
@@ -111,13 +101,13 @@ int measureLag()
   }
   
   timeDifference = monitorTime - cameraTime;
-  Serial.print(" || ");
+  /*Serial.print(" || ");
   Serial.print(monitorTime);
   Serial.print(" || ");
   Serial.print(cameraTime);
   Serial.print(" || ");
   Serial.print(timeDifference);
-  delay(1250);
+  delay(1250);*/
   
   if (timeDifference > 0 && timeDifference < 500) // I don't expect more lag, rejecting duration above 500ms. Also prevents output when dimming (below 0).
   {
@@ -125,13 +115,3 @@ int measureLag()
     return timeDifference;
   }
 };
-
-// Debug mode: sends sensor information to Serial. Order of values defined in debugModeArray
-void printDebugInfo()
-{
-  for (int i = 0; i <= debugModeLength; i = i++)
-  {
-    Serial.print( debugModeArray[i] );
-    Serial.print("\t");
-  }
-}
