@@ -7,3 +7,7 @@ Now only code is created, not tested as I wait for some parts:
 3. very bright LED (12V 10W for first tests)
 4. resistors
 5. pushbutton
+
+
+Circuit:
+https://circuits.io/circuits/4367119-lagtester
