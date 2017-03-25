@@ -7,7 +7,7 @@ const int ledPin = 3;
 // timing for LED intervals
 unsigned long currentMillisLed = 0;
 unsigned long previousMillisLed = 0;
-long interval = 500;           // duration of interval
+long interval = 200;           // duration of interval
 
 // timings for sensors
 unsigned long currentMillisCamera = 0;
@@ -27,7 +27,7 @@ int monitorMax = 800;
 int buttonState; // default button value
 
 // other:
-int ledState = 0;
+int ledState = 1;
 
 void setup() {
 // set pins modes
@@ -50,35 +50,44 @@ void loop()
   /*Serial.print(" || ");
   Serial.print(monitorState);
   Serial.print(" || ");
-  Serial.print(cameraState);
-  delay(1250);*/
+  Serial.print(cameraState);*/
+  
+  /*Serial.print(" || ");
+  Serial.print(ledState);
+  Serial.print(" || ");
+  Serial.print(buttonState);*/
+  
   
   //  run core functions
   switch (buttonState)
   {
     case 1:
       flash();
-      measureLag(); 
-    default:
-      digitalWrite(ledPin, 0); // bail out - disable led
+      measureLag();
+    break;
+    case 0:
+      digitalWrite(ledPin, 1); // bail out - disable led
+    break;
   }
 }
 
 // checks button state and operates LED / High pin should be set to 5v (100% uptime?), use cap if flickers - check if it slows down the LED. Use longer offTime if needed.
 void flash()
   {
-    currentMillisLed = millis();
+   currentMillisLed = millis();
     if(currentMillisLed - previousMillisLed > interval)
     {
       ledState = digitalRead(ledPin);
       switch(ledState)
       {
+        case 0:
+          digitalWrite(ledPin, 1);
+          previousMillisLed = millis();
+        break;
         case 1:
           digitalWrite(ledPin, 0);
           previousMillisLed = millis();
-        default:
-          digitalWrite(ledPin, 1);
-          previousMillisLed = millis();
+        break;
       }
     }
 }
