@@ -2,7 +2,7 @@
 const int cameraPin = 0;
 const int monitorPin = 1;
 const int buttonPin = 2;
-const int ledPin = A3;
+const int ledPin = 3;
 
 // timing for LED intervals
 unsigned long currentMillisLed = 0;
@@ -47,16 +47,21 @@ void loop()
   cameraState = analogRead(cameraPin);
   monitorState = analogRead(monitorPin);
   
+  /*Serial.print(" || ");
+  Serial.print(monitorState);
+  Serial.print(" || ");
+  Serial.print(cameraState);
+  delay(1250);*/
+  
   //  run core functions
-  switch (buttonState){
+  switch (buttonState)
+  {
     case 1:
       flash();
+      measureLag(); 
     default:
       digitalWrite(ledPin, 0); // bail out - disable led
   }
-  
-  measureLag(); 
- 
 }
 
 // checks button state and operates LED / High pin should be set to 5v (100% uptime?), use cap if flickers - check if it slows down the LED. Use longer offTime if needed.
@@ -66,7 +71,8 @@ void flash()
     if(currentMillisLed - previousMillisLed > interval)
     {
       ledState = digitalRead(ledPin);
-      switch(ledState) {
+      switch(ledState)
+      {
         case 1:
           digitalWrite(ledPin, 0);
           previousMillisLed = millis();
@@ -81,7 +87,7 @@ void flash()
 int measureLag()
 {
   currentMillisCamera = millis();
-  if (cameraState > cameraMin && cameraState < cameraMax && buttonState == HIGH)
+  if (cameraState > cameraMin && cameraState < cameraMax)
   {
     cameraTime = currentMillisCamera; // set time of camera flash
   }
@@ -91,7 +97,7 @@ int measureLag()
   }
   
   currentMillisMonitor = millis();
-  if (monitorState > monitorMin && monitorState < monitorMax && buttonState == HIGH)
+  if (monitorState > monitorMin && monitorState < monitorMax)
   {
     monitorTime = currentMillisMonitor; // set time of monitor flash
   }
@@ -100,18 +106,11 @@ int measureLag()
     monitorTime = 0; //reset if reading missed / needed?
   }
   
-  timeDifference = monitorTime - cameraTime;
-  /*Serial.print(" || ");
-  Serial.print(monitorTime);
-  Serial.print(" || ");
-  Serial.print(cameraTime);
-  Serial.print(" || ");
-  Serial.print(timeDifference);
-  delay(1250);*/
+  timeDifference = monitorTime - cameraTime; // calculate lag
   
   if (timeDifference > 0 && timeDifference < 500) // I don't expect more lag, rejecting duration above 500ms. Also prevents output when dimming (below 0).
   {
     Serial.print(timeDifference);
-    return timeDifference;
+    return timeDifference; // return lag
   }
 };
